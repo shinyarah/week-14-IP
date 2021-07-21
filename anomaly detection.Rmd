@@ -1,0 +1,56 @@
+---
+title: "Anomaly Detection"
+author: "shinyarah"
+date: "7/16/2021"
+output: html_document
+---
+```{r}
+library(anomalize)
+library(tidyverse)
+library(readr)
+library(tibbletime)
+library(dplyr)
+data3<- read_csv("http://bit.ly/CarreFourSalesDataset")
+```
+```{r}
+#previewing our dataset
+head(data3)
+```
+```{r}
+tail(data3)
+```
+
+```{r}
+str(data3)
+```
+
+```{r}
+#checking for missing values
+colSums(is.na(data3))
+```
+```{r}
+#checking for duplicates
+duplicates <- data3[duplicated(data3),]
+duplicates
+```
+
+```{r}
+# lets group by server and convert to tibbletime
+sales <- data3 %>% group_by(Date) %>%
+   mutate(Date = as.Date (Date, format="%m/%d/%Y")) %>% as_tbl_time(index = Date)
+head(sales)
+```
+```{r}
+# performing anomaly detection
+sales_anom <- sales %>% summarise(Orders = sum(Sales)) %>%
+    time_decompose(Orders) %>%
+    anomalize(remainder, alpha = 0.25, max_anoms = 0.2) %>%
+    time_recompose() %>%
+    plot_anomalies(time_recomposed = TRUE) +
+    ggtitle("alpha = 0.05, max_anoms = 0.2")
+    
+sales_anom
+```
+ there is a spike feb 28th - march 10th
+ feb 14th projects both extremes
+ jan 20th has low observations

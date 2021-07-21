@@ -1,0 +1,131 @@
+---
+title: "Association Rules"
+author: "shinyarah"
+date: "7/16/2021"
+output: html_document
+---
+
+```{r}
+library(arules)
+```
+## LOADING OUR DATASET
+```{r}
+path <-"http://bit.ly/SupermarketDatasetII"
+
+Transactions<-read.transactions(path, sep = ",")
+Transactions
+```
+## READING OUR DATASET
+```{r}
+# Verifying the object's class
+
+class(Transactions)
+```
+```{r}
+#previewing our dataset
+head(transactions)
+```
+
+```{r}
+tail(transactions)
+```
+
+
+```{r}
+# Generating a summary of the transaction dataset
+
+summary(Transactions)
+```
+
+
+
+
+```{r}
+#structure
+str(transactions)
+```
+
+```{r}
+dim(transactions)
+```
+
+
+## SOLUTION IMPLEMENTATION
+```{r}
+# chart of frequencies and filtering that considers items with a minimum percentage 
+par(mfrow = c(1, 2))
+
+# plot the frequency of items
+itemFrequencyPlot(Transactions, topN = 10,col="red")
+itemFrequencyPlot(Transactions, support = 0.1,col="brown")
+```
+
+```{r}
+# Building a model based on association rules 
+# using the apriori function 
+# ---
+# We use Min Support as 0.001 and confidence as 0.8
+rules <- apriori (Transactions, parameter = list(supp = 0.001, conf = 0.8))
+rules
+```
+using a confidence of 0.8 and min support = 0.001 gives us 74 rules 
+
+
+```{r}
+# Building a apriori model with Min Support as 0.002 and confidence as 0.8.
+rules2 <- apriori (Transactions,parameter = list(supp = 0.002, conf = 0.8)) 
+
+# Building apriori model with Min Support as 0.002 and confidence as 0.6.
+rules3 <- apriori (Transactions, parameter = list(supp = 0.001, conf = 0.6)) 
+
+rules2
+
+rules3
+```
+
+```{r}
+# performing an exploration of our model 
+# 
+summary(rules)
+```
+
+```{r}
+# Observing rules built in our model i.e. first 5 model rules
+# 
+inspect(rules[1:5])
+```
+
+Rule 1: if someone buys french fries, mushroom cream sauce and pasta, they are more likely to buy escalope
+
+```{r}
+# next we order these rules by level of confidence
+# 
+rules<-sort(rules, by="confidence", decreasing=TRUE)
+inspect(rules[1:8])
+```
+
+```{r}
+# If we're interested in making a promotion relating to the sale of mineral water, 
+# we could create a subset of rules concerning these products 
+# ---
+# This would tell us the items that the customers bought before purchasing mineral water
+# ---
+# 
+mineral_water <- subset(rules, subset = rhs %pin% "mineral water")
+ 
+# Then order by confidence
+mineral_water<-sort(mineral_water, by="confidence", decreasing=TRUE)
+inspect(mineral_water[1:5])
+```
+
+
+## RECOMMENDATIONS
+1. stock french fries,mushroom cream sauce,pasta with escalope as they have the highest association
+3. there is a tendency for customers to buy protein-rich food together. these shouls be stocked together to maximamize sales.
+3. the most common transations were with 1 item (1754 items), followed by those with 2 and 3 items.
+4. place eggs, meatballs, pasta, cake, minearl water and milk should be closely arranged as they present a high confidence of being purchased together.
+5. Top 5 items purchased are: mineral water, eggs, pasta, french fries, chocolate.
+6. Escalope should have a targeted promotion especially with customers that purchased french fries,mushroom cream sauce and pasta.
+ 
+
+

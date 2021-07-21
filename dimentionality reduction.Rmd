@@ -1,0 +1,98 @@
+---
+title: "dimentionality reduction and feature selection"
+author: "shinyarah"
+date: "7/1/2021"
+output: html_document
+---
+## loading our dataset
+```{r}
+data1 <- read.csv("http://bit.ly/CarreFourDataset")
+data1
+```
+
+```{r}
+#loading our libraries
+library(stats)
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(caret)
+library(psych)
+library(rpart)
+library(devtools)
+# library(ggbiplot)
+```
+
+## Reading the dataset
+```{r}
+head(data1)
+```
+
+```{r}
+tail(data1)
+```
+
+```{r}
+str(data1)
+```
+
+```{r}
+summary(data1)
+```
+## Data cleaning
+
+```{r}
+#finding missing values
+colSums(is.na(data1))
+```
+```{r}
+#looking for duplicates
+duplicate_values <- data1[duplicated(data1),]
+duplicate_values
+```
+### finding outliers
+```{r}
+# check for outliers/anomalies
+
+# Finding all columns that are numerical/not strings & subsetting to new dataframe
+df_num <- data1[, !sapply(data1, is.character)]
+
+par(mfrow = c(1,1), mar = c(5,4,2,2))
+boxplot(df_num[, c(1,5)], main='BoxPlots')
+boxplot(df_num[, c(3,6)])
+boxplot(df_num[, c(2,7)])
+boxplot(df_num[ ,c(4,8)])
+
+```
+there are a few outliers but i am going to maintain these are intergral to the dataset
+
+
+# SOLUTION IMPLEMENTATION
+## PCA
+
+```{r}
+# Selecting the numerical data 
+# 
+
+data_pca <- data1[,c(6,7,8,12,13,14,15,16)]
+head(data_pca)
+```
+```{r}
+data1 <- data1[ , unlist(lapply(data1, is.numeric))]  
+```
+
+
+```{r}
+#removing unnecessary columns
+data_pca = subset(data_pca, select = -c(gross.margin.percentage, Total) )
+```
+
+```{r}
+pca_obj <- prcomp(data_pca, scale=TRUE)
+summary(pca_obj)
+```
+
+the first three features account for more than 98% of cumulative variance
+
+
+
