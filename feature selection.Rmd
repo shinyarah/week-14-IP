@@ -1,0 +1,110 @@
+---
+title: "feature selection"
+author: "shinyarah"
+date: "7/23/2021"
+output: html_document
+---
+
+```{r}
+
+Data <- read.csv("http://bit.ly/CarreFourDataset")
+Data
+```
+```{r}
+# removing spaces in some column names
+names(Data)<-make.names(names(Data))
+```
+```{r}
+# Checking for missing values
+colSums(is.na(Data))
+```
+
+```{r}
+# checking for duplicates
+anyDuplicated(Data)
+```
+```{r}
+# removing unwanted columns
+drops <- c("Invoice.ID","Date","Time","gross.margin.percentage")
+Data<-Data[ , !(names(Data) %in% drops)]
+names(Data)
+```
+
+```{r}
+# label encoding categorical columns
+library(superml)
+label <- LabelEncoder$new()
+label$fit(Data$Branch)
+Data$Branch <- label$fit_transform(Data$Branch)
+label$fit(Data$Customer.type)
+Data$Customer.type <- label$fit_transform(Data$Customer.type)
+label$fit(Data$Gender)
+Data$Gender <- label$fit_transform(Data$Gender)
+label$fit(Data$Product.line)
+Data$Product.line <- label$fit_transform(Data$Product.line)
+label$fit(Data$Payment)
+Data$Payment <- label$fit_transform(Data$Payment)
+```
+
+
+## filter method
+```{r}
+# Installing and loading our caret package
+# ---
+# 
+suppressWarnings(
+        suppressMessages(if
+                         (!require(caret, quietly=TRUE))
+                install.packages("caret")))
+library(caret)
+
+# Installing and loading the corrplot package for plotting
+# ---
+# 
+suppressWarnings(
+        suppressMessages(if
+                         (!require(corrplot, quietly=TRUE))
+                install.packages("corrplot")))
+library(corrplot)
+```
+
+```{r}
+# Calculating the correlation matrix
+# ---
+#
+correlationMatrix <- cor(Data)
+
+# Find attributes that are highly correlated
+# ---
+#
+highlyCorrelated <- findCorrelation(correlationMatrix, cutoff=0.75)
+
+# Highly correlated attributes
+# ---
+# 
+highlyCorrelated
+
+names(Data[,highlyCorrelated])
+```
+
+```{r}
+# We can remove the variables with a higher correlation 
+# and comparing the results graphically as shown below
+# ---
+# 
+# Removing Redundant Features 
+# ---
+# 
+Dataset2<-Data[-highlyCorrelated]
+
+# Performing our graphical comparison
+# ---
+# 
+par(mfrow = c(1, 2))
+corrplot(correlationMatrix,order = "hclust")
+corrplot(cor(Dataset2), order = "hclust")
+```
+
+
+
+
